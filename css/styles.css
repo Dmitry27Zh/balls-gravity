@@ -5,10 +5,20 @@ html {
 img {
   max-width: 100%;
   height: auto;
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 
 .balls {
   position: relative;
+  width: 34.625rem;
+  height: 38.5rem;
+}
+@media (max-width: 1023px) {
+  .balls {
+    width: 12.8125rem;
+    height: 18.1875rem;
+  }
 }
 .balls__item {
   position: absolute;
@@ -28,11 +38,6 @@ img {
     height: 1.4375rem;
   }
 }
-@media (max-width: 639px) {
-  .balls__item {
-    display: none;
-  }
-}
 .balls__item img {
   width: 100%;
   border-radius: 50%;
@@ -45,6 +50,14 @@ img {
   right: -7.5rem;
   bottom: -7.5rem;
   content: "";
+}
+@media (max-width: 1023px) {
+  .balls__item::before {
+    top: -5rem;
+    left: -5rem;
+    right: -5rem;
+    bottom: -5rem;
+  }
 }
 .balls__item:nth-child(1) {
   top: 11.6875rem;
@@ -316,7 +329,11 @@ img {
     top: 26.8125rem;
     left: 20.25rem;
   }
-  .balls__item:nth-child(n+27) {
+  .balls__item:nth-child(n+26) {
     display: none;
   }
+}
+
+.balls {
+  margin: 0 auto;
 }/*# sourceMappingURL=styles.css.map */

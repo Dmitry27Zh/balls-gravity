@@ -4,6 +4,13 @@
 
 .balls {
   position: relative;
+  width: size(554px);
+  height: size(616px);
+
+  @include vp-tablet-max {
+    width: size(205px);
+    height: size(291px);
+  }
 
   &__item {
     position: absolute;
@@ -19,10 +26,6 @@
       height: size(23px);
     }
 
-    @include vp-mobile-max {
-      display: none;
-    }
-
     img {
       width: 100%;
       border-radius: 50%;
@@ -36,6 +39,13 @@
       right: size(-120px);
       bottom: size(-120px);
       content: '';
+
+      @include vp-tablet-max {
+        top: size(-80px);
+        left: size(-80px);
+        right: size(-80px);
+        bottom: size(-80px);
+      }
     }
 
     &:nth-child(1) {
@@ -376,7 +386,7 @@
         left: size(324px);
       }
 
-      &:nth-child(n + 27) {
+      &:nth-child(n + 26) {
         display: none;
       }
     }
