@@ -29,8 +29,9 @@ img {
   height: 3.0625rem;
   background-color: #ececec;
   border-radius: 50%;
-  -webkit-transition: all 0.5s;
-  transition: all 0.5s;
+  -webkit-transition: position 0.5s;
+  transition: position 0.5s;
+  pointer-events: none;
 }
 @media (max-width: 1023px) {
   .balls__item {
