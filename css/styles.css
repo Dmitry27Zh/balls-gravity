@@ -29,8 +29,8 @@ img {
   height: 3.0625rem;
   background-color: #ececec;
   border-radius: 50%;
-  -webkit-transition: position 0.5s;
-  transition: position 0.5s;
+}
+.balls__item.moving {
   pointer-events: none;
 }
 @media (max-width: 1023px) {
@@ -46,18 +46,18 @@ img {
 }
 .balls__item::before {
   position: absolute;
-  top: -7.5rem;
-  left: -7.5rem;
-  right: -7.5rem;
-  bottom: -7.5rem;
+  top: -5rem;
+  left: -5rem;
+  right: -5rem;
+  bottom: -5rem;
   content: "";
 }
 @media (max-width: 1023px) {
   .balls__item::before {
-    top: -5rem;
-    left: -5rem;
-    right: -5rem;
-    bottom: -5rem;
+    top: -3.125rem;
+    left: -3.125rem;
+    right: -3.125rem;
+    bottom: -3.125rem;
   }
 }
 .balls__item:nth-child(1) {

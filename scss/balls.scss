@@ -19,8 +19,11 @@
     height: size(49px);
     background-color: #ececec;
     border-radius: 50%;
-    transition: position 0.5s;
-    pointer-events: none;
+    // transition: top 0.1s, left 0.1s;
+
+    &.moving {
+      pointer-events: none;
+    }
 
     @include vp-tablet-max {
       width: size(26px);
@@ -35,17 +38,17 @@
 
     &::before {
       position: absolute;
-      top: size(-120px);
-      left: size(-120px);
-      right: size(-120px);
-      bottom: size(-120px);
+      top: size(-80px);
+      left: size(-80px);
+      right: size(-80px);
+      bottom: size(-80px);
       content: '';
 
       @include vp-tablet-max {
-        top: size(-80px);
-        left: size(-80px);
-        right: size(-80px);
-        bottom: size(-80px);
+        top: size(-50px);
+        left: size(-50px);
+        right: size(-50px);
+        bottom: size(-50px);
       }
     }
 
