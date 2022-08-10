@@ -29,6 +29,8 @@ img {
   height: 3.0625rem;
   background-color: #ececec;
   border-radius: 50%;
+  -webkit-transition: top 0.1s, left 0.1s;
+  transition: top 0.1s, left 0.1s;
 }
 .balls__item.moving {
   pointer-events: none;

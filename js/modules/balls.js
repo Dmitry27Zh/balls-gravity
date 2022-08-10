@@ -61,8 +61,7 @@ const updateBallsToMove = (ballsToMove, currentX, currentY, layerLimitsList) => 
     virtualBall.style.outline = '3px solid purple'
     closestBall.style.outline = '3px solid purple'
     closestBall.style.zIndex = 3
-    closestBall.style.top = `${virtualBall.offsetTop}px`
-    closestBall.style.left = `${virtualBall.offsetLeft}px`
+    setBallPosition(closestBall, virtualBall.dataset.x, virtualBall.dataset.y)
     virtualBall.remove()
     addBallToMove(closestBall, ballsToMove, index)
   })
@@ -73,14 +72,20 @@ const checkBallVirtuality = (ball) => ball.hasAttribute('data-virtual')
 const resetBall = (ball) => {
   if (checkBallVirtuality(ball)) {
     ball.remove()
+  } else {
+    ball.style.top = ball.style.left = null
+    ball.dataset.x = ball.dataset.y = ''
+    ball.dataset.initX = ball.dataset.initY = ''
+    ball.classList.remove('moving')
+    ball.removeAttribute('style')
   }
 }
 
 const setBallPosition = (ball, x, y) => {
-  ball.dataset.x = x
-  ball.dataset.y = y
   ball.style.top = `${y}px`
   ball.style.left = `${x}px`
+  ball.dataset.x = x
+  ball.dataset.y = y
 }
 
 const moveBall = (ball, move) => {
@@ -125,8 +130,8 @@ const createVirtualBall = (wrap) => {
 const addBallToMove = (ball, ballsToMove, index = ballsToMove.length) => {
   ballsToMove[index] = ball
   ball.classList.add('moving')
-  ball.dataset.initY = ball.offsetTop
-  ball.dataset.initX = ball.offsetLeft
+  ball.dataset.initX = ball.dataset.x
+  ball.dataset.initY = ball.dataset.y
 }
 
 const addVirtualBalls = (wrap, startCoords, offsetList, ballsToMove) => {
@@ -153,7 +158,7 @@ const addVirtualBalls = (wrap, startCoords, offsetList, ballsToMove) => {
 
 const init = (wrap, layerLimitsList, offsetList) => {
   let startCoords = {}
-  const ballsToMove = []
+  let ballsToMove = []
 
   const onMouseEnter = (enterEvt) => {
     startCoords.x = enterEvt.clientX
@@ -175,12 +180,13 @@ const init = (wrap, layerLimitsList, offsetList) => {
   const onMouseLeave = () => {
     ballsToMove.forEach((ball) => {
       resetBall(ball)
+      ballsToMove = []
     })
   }
 
-  wrap.addEventListener('mouseenter', onMouseEnter, { once: true })
+  wrap.addEventListener('mouseenter', onMouseEnter)
   wrap.addEventListener('mousemove', onMouseMove)
-  // wrap.addEventListener('mouseleave', onMouseLeave)
+  wrap.addEventListener('mouseleave', onMouseLeave)
 }
 
 export const initBalls = () => wrappers.forEach((wrapper) => init(wrapper, layerBallsLimits, BallsOffsetList))
