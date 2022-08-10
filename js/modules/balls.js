@@ -1,6 +1,6 @@
 const wrappers = document.querySelectorAll('.balls')
 
-const GRAVITY_GAP = 80
+const GRAVITY_DISTANCE = 80
 const layerBallsLimits = [
   [0, 7],
   [7, 18],
@@ -32,17 +32,17 @@ const getBallsDistance = (firstBall, secondBall) => {
   return Math.hypot(firstBall.offsetLeft - secondBall.offsetLeft, firstBall.offsetTop - secondBall.offsetTop)
 }
 
-const updateBallsToMove = (ballsToMove, currentX, currentY, layerLimitsList) => {
-  const closestBalls = document.elementsFromPoint(currentX, currentY).filter((el) => el.matches('.balls__item'))
-
+const getPairsByAscendingDistance = (ballsToMove, closestBalls) => {
   const pairs = ballsToMove.reduce((result, ball, index) => {
     if (checkBallVirtuality(ball)) {
-      const currentPairs = closestBalls.map((closestBall) => ({
-        virtualBall: ball,
-        closestBall,
-        index,
-        distance: getBallsDistance(ball, closestBall),
-      }))
+      const currentPairs = closestBalls
+        .map((closestBall) => ({
+          virtualBall: ball,
+          closestBall,
+          index,
+          distance: getBallsDistance(ball, closestBall),
+        }))
+        .filter(({ distance }) => distance < GRAVITY_DISTANCE)
 
       result.push(...currentPairs)
     }
@@ -50,13 +50,15 @@ const updateBallsToMove = (ballsToMove, currentX, currentY, layerLimitsList) => 
     return result
   }, [])
 
-  const pairsByAscendingDistance = pairs.sort((a, b) => a.distance - b.distance).slice(0, 2)
+  return pairs.sort((a, b) => a.distance - b.distance)
+}
+
+const updateBallsToMove = (ballsToMove, currentX, currentY, layerLimitsList) => {
+  const closestBalls = document.elementsFromPoint(currentX, currentY).filter((el) => el.matches('.balls__item'))
+  const pairsByAscendingDistance = getPairsByAscendingDistance(ballsToMove, closestBalls)
 
   pairsByAscendingDistance.forEach(({ virtualBall, closestBall, index }) => {
     if (checkBallMoving(virtualBall) && !checkBallMoving(closestBall)) {
-      virtualBall.style.outline = '3px solid purple'
-      closestBall.style.outline = '3px solid purple'
-      closestBall.style.zIndex = 3
       addBallToMove(closestBall, ballsToMove, closestBall.offsetLeft, closestBall.offsetTop, index)
       resetBall(virtualBall)
       setBallPosition(closestBall, virtualBall.dataset.x, virtualBall.dataset.y)

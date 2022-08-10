@@ -20,6 +20,11 @@ img {
     height: 18.1875rem;
   }
 }
+.balls::before {
+  position: absolute;
+  inset: -100px;
+  content: "";
+}
 .balls__item {
   position: absolute;
   display: -webkit-box;
@@ -33,6 +38,7 @@ img {
   transition: top 0.1s, left 0.1s;
 }
 .balls__item.moving {
+  z-index: 2;
   pointer-events: none;
 }
 @media (max-width: 1023px) {

@@ -12,6 +12,12 @@
     height: size(291px);
   }
 
+  &::before {
+    position: absolute;
+    inset: -100px;
+    content: '';
+  }
+
   &__item {
     position: absolute;
     display: flex;
@@ -22,6 +28,7 @@
     transition: top 0.1s, left 0.1s;
 
     &.moving {
+      z-index: 2;
       pointer-events: none;
     }
 
