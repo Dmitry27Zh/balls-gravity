@@ -32,12 +32,8 @@ const getBallsDistance = (firstBall, secondBall) => {
   return Math.hypot(firstBall.offsetLeft - secondBall.offsetLeft, firstBall.offsetTop - secondBall.offsetTop)
 }
 
-let counter = 0
-
 const updateBallsToMove = (ballsToMove, currentX, currentY, layerLimitsList) => {
   const closestBalls = document.elementsFromPoint(currentX, currentY).filter((el) => el.matches('.balls__item'))
-  counter++
-  if (counter >= 2) return
 
   const pairs = ballsToMove.reduce((result, ball, index) => {
     if (checkBallVirtuality(ball)) {
@@ -54,16 +50,17 @@ const updateBallsToMove = (ballsToMove, currentX, currentY, layerLimitsList) => 
     return result
   }, [])
 
-  const pairsByAscendingDistance = pairs.sort((a, b) => a.distance - b.distance).slice(0, 1)
-  console.log(pairsByAscendingDistance)
+  const pairsByAscendingDistance = pairs.sort((a, b) => a.distance - b.distance).slice(0, 2)
 
-  pairsByAscendingDistance.forEach(({ virtualBall, closestBall, index, distance }) => {
-    virtualBall.style.outline = '3px solid purple'
-    closestBall.style.outline = '3px solid purple'
-    closestBall.style.zIndex = 3
-    setBallPosition(closestBall, virtualBall.dataset.x, virtualBall.dataset.y)
-    virtualBall.remove()
-    addBallToMove(closestBall, ballsToMove, index)
+  pairsByAscendingDistance.forEach(({ virtualBall, closestBall, index }) => {
+    if (checkBallMoving(virtualBall) && !checkBallMoving(closestBall)) {
+      virtualBall.style.outline = '3px solid purple'
+      closestBall.style.outline = '3px solid purple'
+      closestBall.style.zIndex = 3
+      addBallToMove(closestBall, ballsToMove, closestBall.offsetLeft, closestBall.offsetTop, index)
+      resetBall(virtualBall)
+      setBallPosition(closestBall, virtualBall.dataset.x, virtualBall.dataset.y)
+    }
   })
 }
 
@@ -76,9 +73,10 @@ const resetBall = (ball) => {
     ball.style.top = ball.style.left = null
     ball.dataset.x = ball.dataset.y = ''
     ball.dataset.initX = ball.dataset.initY = ''
-    ball.classList.remove('moving')
     ball.removeAttribute('style')
   }
+
+  ball.classList.remove('moving')
 }
 
 const setBallPosition = (ball, x, y) => {
@@ -90,33 +88,16 @@ const setBallPosition = (ball, x, y) => {
 
 const moveBall = (ball, move) => {
   const ballCoords = {
-    x: ball.dataset.initX - move.x,
-    y: ball.dataset.initY - move.y,
+    x: ball.dataset.x - move.x,
+    y: ball.dataset.y - move.y,
   }
 
   setBallPosition(ball, ballCoords.x, ballCoords.y)
 }
 
-const checkBallDistance = (distance) => {
-  return Math.hypot(distance.x, distance.y) < GRAVITY_GAP
-}
-
-const checkTransformNeed = (isVirtual, distance) => {
-  return isVirtual || checkBallDistance(distance)
-}
-
 const moveBalls = (ballsToMove, move, moveEvt, wrap, layerLimitsList) => {
   updateBallsToMove(ballsToMove, moveEvt.clientX, moveEvt.clientY, layerLimitsList)
-
-  ballsToMove.forEach((ball) => {
-    const isTransformNeed = checkTransformNeed(checkBallVirtuality(ball), move)
-
-    if (true) {
-      moveBall(ball, move)
-    } else {
-      resetBall(ball, balls, wrap)
-    }
-  })
+  ballsToMove.forEach((ball) => moveBall(ball, move))
 }
 
 const createVirtualBall = (wrap) => {
@@ -127,11 +108,13 @@ const createVirtualBall = (wrap) => {
   return virtualBall
 }
 
-const addBallToMove = (ball, ballsToMove, index = ballsToMove.length) => {
+const checkBallMoving = (ball) => ball.classList.contains('moving')
+
+const addBallToMove = (ball, ballsToMove, initX, initY, index = ballsToMove.length) => {
   ballsToMove[index] = ball
   ball.classList.add('moving')
-  ball.dataset.initX = ball.dataset.x
-  ball.dataset.initY = ball.dataset.y
+  ball.dataset.initX = initX
+  ball.dataset.initY = initY
 }
 
 const addVirtualBalls = (wrap, startCoords, offsetList, ballsToMove) => {
@@ -151,8 +134,8 @@ const addVirtualBalls = (wrap, startCoords, offsetList, ballsToMove) => {
       y: pointerCoords.y + offsetList[i].Y * ball.offsetWidth - 0.5 * ball.offsetHeight,
     }
 
+    addBallToMove(ball, ballsToMove, ballCoords.x, ballCoords.y)
     setBallPosition(ball, ballCoords.x, ballCoords.y)
-    addBallToMove(ball, ballsToMove)
   }
 }
 
@@ -173,8 +156,8 @@ const init = (wrap, layerLimitsList, offsetList) => {
     }
 
     moveBalls(ballsToMove, move, moveEvt, wrap, layerLimitsList)
-    // startCoords.x = moveEvt.x
-    // startCoords.y = moveEvt.y
+    startCoords.x = moveEvt.x
+    startCoords.y = moveEvt.y
   }
 
   const onMouseLeave = () => {
