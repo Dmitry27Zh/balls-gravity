@@ -1,3 +1,5 @@
+import { throttle } from '../utils/throttle.js'
+
 const wrappers = document.querySelectorAll('.balls')
 
 const Gravity = {
@@ -5,6 +7,7 @@ const Gravity = {
   TIMEOUT: 200,
 }
 
+const THROTTLE_TIMEOUT = 80
 const LAYER_BALLS_LIMITS = [
   [0, 7],
   [7, 18],
@@ -171,7 +174,7 @@ const init = (wrap, offsetList, layerLimitsList) => {
     addVirtualBalls(wrap, startCoords, offsetList, ballsToMove)
   }
 
-  const onMouseMove = (moveEvt) => {
+  const onMouseMove = throttle((moveEvt) => {
     const move = {
       x: startCoords.x - moveEvt.x,
       y: startCoords.y - moveEvt.y,
@@ -180,7 +183,7 @@ const init = (wrap, offsetList, layerLimitsList) => {
     moveBalls(ballsToMove, move, moveEvt, wrap, layerLimitsList)
     startCoords.x = moveEvt.x
     startCoords.y = moveEvt.y
-  }
+  }, THROTTLE_TIMEOUT)
 
   const onMouseLeave = () => {
     ballsToMove.forEach((ball) => {
