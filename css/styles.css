@@ -54,10 +54,10 @@ img {
 }
 .balls__item::before {
   position: absolute;
-  top: -5rem;
-  left: -5rem;
-  right: -5rem;
-  bottom: -5rem;
+  top: -6.25rem;
+  left: -6.25rem;
+  right: -6.25rem;
+  bottom: -6.25rem;
   content: "";
 }
 @media (max-width: 1023px) {

@@ -1,13 +1,17 @@
 const wrappers = document.querySelectorAll('.balls')
 
-const GRAVITY_DISTANCE = 80
-const layerBallsLimits = [
+const Gravity = {
+  DISTANCE: 250,
+  TIMEOUT: 200,
+}
+
+const LAYER_BALLS_LIMITS = [
   [0, 7],
   [7, 18],
 ]
 // const MAX_SEARCH_ITERATIONS_COUNT = 4;
 
-let BallsOffsetList = [
+const BallsOffsetList = [
   { Y: 0.04, X: 0.81 },
   { Y: 0.85, X: 0.7 },
   { Y: 0.95, X: -0.19 },
@@ -32,6 +36,22 @@ const getBallsDistance = (firstBall, secondBall) => {
   return Math.hypot(firstBall.offsetLeft - secondBall.offsetLeft, firstBall.offsetTop - secondBall.offsetTop)
 }
 
+const checkBallDistance = (ball) => {
+  return Math.hypot(ball.dataset.x - ball.dataset.initX, ball.dataset.y - ball.dataset.initY) <= Gravity.DISTANCE
+}
+
+const resetBall = (ball) => {
+  if (checkBallVirtuality(ball)) {
+    ball.remove()
+    ball.classList.remove('moving')
+  } else {
+    setTimeout(() => ball.classList.remove('moving'), Gravity.TIMEOUT) // transitionend doesn't work in some cases
+    ball.style.top = ball.style.left = null
+    ball.dataset.x = ball.dataset.y = ''
+    ball.dataset.initX = ball.dataset.initY = ''
+  }
+}
+
 const getPairsByAscendingDistance = (ballsToMove, closestBalls) => {
   const pairs = ballsToMove.reduce((result, ball, index) => {
     if (checkBallVirtuality(ball)) {
@@ -42,7 +62,7 @@ const getPairsByAscendingDistance = (ballsToMove, closestBalls) => {
           index,
           distance: getBallsDistance(ball, closestBall),
         }))
-        .filter(({ distance }) => distance < GRAVITY_DISTANCE)
+        .filter(({ distance }) => distance <= Gravity.DISTANCE)
 
       result.push(...currentPairs)
     }
@@ -53,7 +73,17 @@ const getPairsByAscendingDistance = (ballsToMove, closestBalls) => {
   return pairs.sort((a, b) => a.distance - b.distance)
 }
 
+const stopBallsMoving = (ballsToMove) => {
+  ballsToMove.forEach((ball, index) => {
+    if (!checkBallVirtuality(ball) && !checkBallDistance(ball)) {
+      addVirtualBall(ball.parentElement, ballsToMove, ball.dataset.x, ball.dataset.y, index)
+      resetBall(ball)
+    }
+  })
+}
+
 const updateBallsToMove = (ballsToMove, currentX, currentY, layerLimitsList) => {
+  stopBallsMoving(ballsToMove)
   const closestBalls = document.elementsFromPoint(currentX, currentY).filter((el) => el.matches('.balls__item'))
   const pairsByAscendingDistance = getPairsByAscendingDistance(ballsToMove, closestBalls)
 
@@ -67,19 +97,6 @@ const updateBallsToMove = (ballsToMove, currentX, currentY, layerLimitsList) => 
 }
 
 const checkBallVirtuality = (ball) => ball.hasAttribute('data-virtual')
-
-const resetBall = (ball) => {
-  if (checkBallVirtuality(ball)) {
-    ball.remove()
-  } else {
-    ball.style.top = ball.style.left = null
-    ball.dataset.x = ball.dataset.y = ''
-    ball.dataset.initX = ball.dataset.initY = ''
-    ball.removeAttribute('style')
-  }
-
-  ball.classList.remove('moving')
-}
 
 const setBallPosition = (ball, x, y) => {
   ball.style.top = `${y}px`
@@ -97,17 +114,9 @@ const moveBall = (ball, move) => {
   setBallPosition(ball, ballCoords.x, ballCoords.y)
 }
 
-const moveBalls = (ballsToMove, move, moveEvt, wrap, layerLimitsList) => {
+const moveBalls = (ballsToMove, move, moveEvt, layerLimitsList) => {
   updateBallsToMove(ballsToMove, moveEvt.clientX, moveEvt.clientY, layerLimitsList)
   ballsToMove.forEach((ball) => moveBall(ball, move))
-}
-
-const createVirtualBall = (wrap) => {
-  const virtualBall = wrap.firstElementChild.cloneNode()
-  virtualBall.setAttribute('data-virtual', '')
-  // virtualBall.style.visibility = 'hidden'
-  virtualBall.style.background = 'red'
-  return virtualBall
 }
 
 const checkBallMoving = (ball) => ball.classList.contains('moving')
@@ -119,29 +128,40 @@ const addBallToMove = (ball, ballsToMove, initX, initY, index = ballsToMove.leng
   ball.dataset.initY = initY
 }
 
+const createVirtualBall = (wrap) => {
+  const virtualBall = wrap.firstElementChild.cloneNode()
+  virtualBall.setAttribute('data-virtual', '')
+  virtualBall.style.visibility = 'hidden'
+  return virtualBall
+}
+
+const addVirtualBall = (wrap, ballsToMove, initX, initY, index) => {
+  const ball = createVirtualBall(wrap)
+  wrap.append(ball)
+  addBallToMove(ball, ballsToMove, initX, initY, index)
+  setBallPosition(ball, initX, initY)
+}
+
 const addVirtualBalls = (wrap, startCoords, offsetList, ballsToMove) => {
   const wrapCoords = wrap.getBoundingClientRect()
   const pointerCoords = {
     x: startCoords.x - wrapCoords.left,
     y: startCoords.y - wrapCoords.top,
   }
+  const ball = wrap.firstElementChild
   const quantity = offsetList.length
 
   for (let i = 0; i < quantity; i++) {
-    const ball = createVirtualBall(wrap)
-    wrap.append(ball)
-
     const ballCoords = {
       x: pointerCoords.x + offsetList[i].X * ball.offsetWidth - 0.5 * ball.offsetWidth,
       y: pointerCoords.y + offsetList[i].Y * ball.offsetWidth - 0.5 * ball.offsetHeight,
     }
 
-    addBallToMove(ball, ballsToMove, ballCoords.x, ballCoords.y)
-    setBallPosition(ball, ballCoords.x, ballCoords.y)
+    addVirtualBall(wrap, ballsToMove, ballCoords.x, ballCoords.y)
   }
 }
 
-const init = (wrap, layerLimitsList, offsetList) => {
+const init = (wrap, offsetList, layerLimitsList) => {
   let startCoords = {}
   let ballsToMove = []
 
@@ -165,8 +185,9 @@ const init = (wrap, layerLimitsList, offsetList) => {
   const onMouseLeave = () => {
     ballsToMove.forEach((ball) => {
       resetBall(ball)
-      ballsToMove = []
     })
+
+    ballsToMove = []
   }
 
   wrap.addEventListener('mouseenter', onMouseEnter)
@@ -174,4 +195,4 @@ const init = (wrap, layerLimitsList, offsetList) => {
   wrap.addEventListener('mouseleave', onMouseLeave)
 }
 
-export const initBalls = () => wrappers.forEach((wrapper) => init(wrapper, layerBallsLimits, BallsOffsetList))
+export const initBalls = () => wrappers.forEach((wrapper) => init(wrapper, BallsOffsetList, LAYER_BALLS_LIMITS))

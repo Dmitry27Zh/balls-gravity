@@ -45,10 +45,10 @@
 
     &::before {
       position: absolute;
-      top: size(-80px);
-      left: size(-80px);
-      right: size(-80px);
-      bottom: size(-80px);
+      top: size(-100px);
+      left: size(-100px);
+      right: size(-100px);
+      bottom: size(-100px);
       content: '';
 
       @include vp-tablet-max {
